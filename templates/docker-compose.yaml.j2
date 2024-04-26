@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14.1-alpine
+    container_name: {{ docker_project_name }}
+    restart: always
+    environment:
+      - POSTGRES_USER={{ postgresql_user }}
+      - POSTGRES_PASSWORD={{ postgresql_user }}
+    ports:
+      - '5432:5432'
+    volumes: 
+      - {{ docker_data_dir }}:/var/lib/postgresql/data

@@ -1,0 +1,74 @@
+---
+# Variable configuration.
+- include_tasks: variables.yml
+
+- name: Check if a databse was provisioned already
+  stat:
+    path: "{{ provision_file }}"
+  register: provision_check
+
+- name: Database already provisioned 
+  ansible.builtin.debug:
+    msg: "islnk isn't defined (path doesn't exist)"
+  when: provision_check.stat.exists
+
+- name: End playbook if database already provisioned
+  debug: 
+    msg: "ENDING ANSIBLE RUN"
+  failed_when: provision_check.stat.exists
+
+- name: End Play if already run
+  debug:
+    msg: 'ENDING Playbook Run! Postgres database may already be provisioned'
+  when: provision_check.rc == 0
+
+- name: Test - Postgres stats
+  ansible.builtin.debug:
+    msg: 
+      - 'Postgres user will be {{ postgresql_user }}'
+      - 'Postgres database will be {{ postgresql_databases }}'  
+
+# Setup/install tasks.
+- include_tasks: setup-Archlinux.yml
+  when: ansible_os_family == 'Archlinux' and docker_setup == false
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian' and docker_setup == false
+
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat' and docker_setup == false
+
+- include_tasks: setup-Docker.yml
+  when: docker_setup == true 
+
+- include_tasks: initialize.yml
+  when:  docker_setup == false
+
+- include_tasks: configure.yml
+  when: docker_setup == false
+
+- name: Ensure PostgreSQL is started and enabled on boot.
+  service:
+    name: "{{ postgresql_daemon }}"
+    state: "{{ postgresql_service_state }}"
+    enabled: "{{ postgresql_service_enabled }}"
+
+# Configure PostgreSQL.
+- import_tasks: users.yml
+  when: docker_setup == false
+
+- import_tasks: databases.yml
+  when: docker_setup == false
+
+- import_tasks: users_props.yml
+  when: docker_setup == false
+
+# Create a file when first run is completed. 
+- name: Creating checkpoint
+  copy:
+    path: "{{ provision_file }}"
+    content: |
+        Database Created and 
+        Provisioned with Ansible
+        -- TIMESTAMP -- 
+        {{ ansible_date_time }}

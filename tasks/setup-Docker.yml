@@ -1,0 +1,61 @@
+---
+- name: Create potsgres directories 
+  file:
+    path: "{{ compose_dir }}/{{ project_name }}"
+    state: directory
+  with_items:
+    - "{{ docker_compose_dir }}"
+    - "{{ docker_compose_dir }}/{{ docker_project_name }}"
+    - "{{ docker_compose_dir }}/{{ docker_project_name }}/{{ data_dir }}"
+    - "{{ docker_compose_dir }}/{{ docker_project_name }}/{{ docker_scripts_dir }}"
+
+- name: Copy docker-compose.yaml
+  template: 
+    src: "templates/docker-compose.yaml.j2"
+    dest: "{{ compose_dir }}/{{ project_name }}/docker-compose.yaml"
+
+- name: Copy postgres scripts if present
+  template: 
+    src: "{{ item }}"
+    dest: "{{ docker_scripts_dir }}"
+  with_items:
+    - "templates/scripts/*"
+
+- name: Ensure Docker is started and enabled on boot.
+  service:
+    name: "docker"
+    state: "started"
+    enabled: "true"
+
+- name: spin up postgres 
+  command: "docker-compose up -d"
+  args:
+    chdir: "{{ docker_compose_dir }}/{{ project_name }}"
+ 
+- name: Ensure PostgreSQL database is initialized.
+  command: "{{ docker_exec_init }}" 
+  become: true
+  become_user: "{{ postgresql_user }}"
+  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  #vars:
+  #  ansible_ssh_pipelining: true
+
+# scripts 
+- name: Import postgres scripts 
+  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
+  register: run_scripts
+  with_items: 
+    - "{{ pg_scripts }}"
+
+# backup 
+#- name: Import postgres scripts 
+#  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
+#  register: run_scripts
+#  with_items: 
+#    - "{{ pg_scripts }}"
+# restore 
+#- name: Import postgres scripts 
+#  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
+#  register: run_scripts
+#  with_items: 
+#    - "{{ pg_scripts }}"

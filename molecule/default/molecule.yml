@@ -1,0 +1,33 @@
+---
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+platforms:
+  - name: rhel-8
+    image: redhat/ubi8
+    #image: geerlingguy/docker-${MOLECULE_DISTRO:-centos8}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  - name: ubuntu-2004
+    image: ubuntu/focal-20.04
+    #image: geerlingguy/docker-${MOLECULE_DISTRO:-centos8}-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+  - name: debian-stable
+    image: debian:stable-slim 
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

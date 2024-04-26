@@ -1,0 +1,38 @@
+- hosts: all
+#  become: true
+  gather_facts: true 
+  vars_prompt:
+    - name: psql_username
+      prompt: What is your username?
+      private: false  
+    - name: psql_database
+      prompt: Enter a name for your databse? 
+      private: false   
+    - name: psql_docker
+      prompt: Would you like to setup postgres with docker (yes/no)?
+      private: false  
+  tasks:
+    - name: Set postgres username
+      set_fact:
+        postgresql_user: "{{ psql_username }}"
+    - name: Set postgres database
+      set_fact:
+        postgresql_databases: "{{ psql_database }}"
+          
+    - name: Provision with Docker check
+      set_fact:
+        docker_setup: true
+      when: psql_docker == "yes"
+
+    - name: Provision WITHOUT Docker check
+      set_fact:
+        docker_setup: false
+      when: psql_docker == "no"
+
+    - name: Test - Postgres stats
+      ansible.builtin.debug:
+        msg: 
+          - 'Postgres user will be {{ psql_username }}'
+          - 'Postgres database will be {{ psql_database }}'  
+        
+    - import_tasks: "{{ playbook_dir }}/tasks/main.yml"
