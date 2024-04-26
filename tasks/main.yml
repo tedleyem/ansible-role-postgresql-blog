@@ -30,22 +30,22 @@
 
 # Setup/install tasks.
 - include_tasks: setup-Archlinux.yml
-  when: ansible_os_family == 'Archlinux' and docker_setup == false
+  when: ansible_os_family == 'Archlinux' and docker_setup
 
 - include_tasks: setup-Debian.yml
-  when: ansible_os_family == 'Debian' and docker_setup == false
+  when: ansible_os_family == 'Debian' and docker_setup
 
 - include_tasks: setup-RedHat.yml
-  when: ansible_os_family == 'RedHat' and docker_setup == false
+  when: ansible_os_family == 'RedHat' and docker_setup
 
 - include_tasks: setup-Docker.yml
   when: docker_setup == true 
 
 - include_tasks: initialize.yml
-  when:  docker_setup == false
+  when:  docker_setup
 
 - include_tasks: configure.yml
-  when: docker_setup == false
+  when: docker_setup
 
 - name: Ensure PostgreSQL is started and enabled on boot.
   service:
@@ -55,18 +55,18 @@
 
 # Configure PostgreSQL.
 - import_tasks: users.yml
-  when: docker_setup == false
+  when: docker_setup
 
 - import_tasks: databases.yml
-  when: docker_setup == false
+  when: docker_setup
 
 - import_tasks: users_props.yml
-  when: docker_setup == false
+  when: docker_setup
 
 # Create a file when first run is completed. 
 - name: Creating checkpoint
   copy:
-    path: "{{ provision_file }}"
+    dest: "{{ provision_file }}"
     content: |
         Database Created and 
         Provisioned with Ansible
