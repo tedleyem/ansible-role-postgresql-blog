@@ -1,5 +1,5 @@
 ---
-- name: Create potsgres directories 
+- name: Create postgres directories 
   file:
     path: "{{ compose_dir }}/{{ project_name }}"
     state: directory
@@ -27,7 +27,7 @@
     state: "started"
     enabled: "true"
 
-- name: spin up postgres 
+- name: Spin up postgres 
   command: "docker-compose up -d"
   args:
     chdir: "{{ docker_compose_dir }}/{{ project_name }}"
@@ -39,23 +39,3 @@
   # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
   #vars:
   #  ansible_ssh_pipelining: true
-
-# scripts 
-- name: Import postgres scripts 
-  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
-  register: run_scripts
-  with_items: 
-    - "{{ pg_scripts }}"
-
-# backup 
-#- name: Import postgres scripts 
-#  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
-#  register: run_scripts
-#  with_items: 
-#    - "{{ pg_scripts }}"
-# restore 
-#- name: Import postgres scripts 
-#  command: "psql -h hostname -d postgres -U username -f {{ item  }}"
-#  register: run_scripts
-#  with_items: 
-#    - "{{ pg_scripts }}"
