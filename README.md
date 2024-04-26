@@ -9,6 +9,19 @@ Create a new molecule scenario:
 molecule init scenario
 ```
 
+Run this playbook locally using the predefined variables in defaults/main.yml 
+```
+ansible-playbook --limit localhost playbook.yml
+```
+
+Run the questionnaire and set new variables yourself.
+```
+
+ansible-playbook --limit localhost questions.yml
+````
+
+
+
 --- 
 GEERLING NOTES 
 # Ansible Role: PostgreSQL
